@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>web ui examples</title>
+<style>
+#popup {
+  width: 200px;
+  height: 100px;
+  background-color: #eee;
+  display: none;
+  position: absolute;
+}
+</style>
+</head>
+<body>
+<input type="button" value="show popup" id="showPopup"/>
+<div id="popup">
+This is a popup.
+Click outside to close,
+or press ESC key.
+</div>
+<script src="js/jquery-1.11.0.js"></script>
+<script>
+$(function() {
+  $("#showPopup").click(function(e) {
+    $("#popup").css($("#showPopup").offset()).show();
+    e.stopPropagation();
+  });
+
+  $("#popup").click(function(e) {
+    e.stopPropagation();
+  });
+
+  $(document).click(function(e) {
+    $("#popup").hide();
+  });
+
+  $(document).keydown(function(e) {
+    if (e.which === 27) { // ESC
+      $("#popup").hide();
+    }
+  });
+});
+</script>
+</body>
+</html>
