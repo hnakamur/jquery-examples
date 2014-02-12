@@ -2,7 +2,7 @@
 <html>
 <head>
 <meta charset="utf-8"/>
-<title>web ui examples</title>
+<title>popup examples</title>
 <style>
 #popup, #popup2 {
   width: 200px;
@@ -40,17 +40,13 @@ or press ESC key.
 <script src="js/jquery.popup.js"></script>
 <script>
 $(function() {
-  $("#popup").popup($("#showPopup").position());
-
   $("#showPopup").click(function(e) {
-    $("#popup").popup("open");
+    $("#popup").popup("open", $(this).position());
     e.stopPropagation();
   });
 
-  $("#popup2").popup($("#showPopup2").position());
-
   $("#showPopup2").click(function(e) {
-    $("#popup2").popup("open");
+    $("#popup2").popup("open", $(this).position());
     e.stopPropagation();
   });
 });
