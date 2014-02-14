@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>web ui examples</title>
+<style>
+#pane {
+  width: 200px;
+  height: 100px;
+  overflow: auto;
+  background-color: #eee;
+  position: relative; /* needed for IE7 */
+}
+#content {
+  position: relative;
+}
+.row {
+  position: absolute;
+  width: 200px;
+  border-width: 1px 0 1px 0;
+  border-style: solid;
+}
+</style>
+</head>
+<body>
+<div id="pane">
+<div id="content">
+</div>
+</div>
+<script src="js/jquery-1.11.0.js"></script>
+<script>
+$(function() {
+  var dataCount = 10000;
+
+  function measureRowHeight() {
+    var row = $('<div class="row">1</div>').appendTo("#content");
+    var rowHeight = row.outerHeight();
+    row.remove();
+    return rowHeight;
+  }
+
+  function buildRowContent(div, i) {
+    div.text(i + 1);
+  }
+
+  function adjustRow(div, i) {
+    div.css('top', i * rowHeight);
+    div.data("row", i);
+    buildRowContent(div, i);
+  }
+
+  var rowHeight = measureRowHeight();
+  $("#content").css("height", rowHeight * dataCount);
+
+  var pane = $("#pane");
+  var paneHeight = pane.outerHeight();
+  var rowCount = Math.ceil(paneHeight / rowHeight) + 1;
+  var rows = [];
+  var row;
+
+  for (var i = 0; i < rowCount; i++) {
+    row = $('<div class="row"/>').appendTo("#content");
+    adjustRow(row, i);
+    rows.push(row);
+  }
+
+  var initialPos = 500 * rowHeight;
+  pane.scrollTop(initialPos);
+
+  var prevScrollTop = initialPos;
+  pane.scroll(function(e) {
+    var scrollTop = $(this).scrollTop(),
+        pos, i;
+    if (scrollTop < prevScrollTop) { // scroll up
+      while (true) {
+        pos = rows[rowCount - 1].position();
+        if (pos.top <= scrollTop + paneHeight) {
+          break;
+        }
+        i = rows[0].data("row") - 1;
+        if (i < 0) {
+          break;
+        }
+        row = rows.pop();
+        adjustRow(row, i);
+        rows.unshift(row);
+      }
+    } else { // scroll down
+      while (true) {
+        pos = rows[0].position();
+        if (pos.top + rowHeight >= scrollTop) {
+          break;
+        }
+        i = rows[rowCount - 1].data("row") + 1;
+        if (i + 1 > dataCount) {
+          break;
+        }
+        row = rows.shift();
+        adjustRow(row, i);
+        rows.push(row);
+      }
+    }
+
+    prevScrollTop = scrollTop;
+  });
+});
+</script>
+</body>
+</html>
