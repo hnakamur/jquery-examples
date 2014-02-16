@@ -67,29 +67,33 @@ Results
 <script src="js/jquery-1.11.0.js"></script>
 <script>
 $(function() {
-  var ua = navigator.userAgent,
-    // Check in order of browser share.
-    // See http://gigazine.net/news/20140106-os-browser-share/
-    // Check Chrome before Safari, because Chrome userAgent contains Safari.
-    uaType =
-      (ua.indexOf('MSIE') != -1 || ua.indexOf('Trident') != -1) ? 'IE' :
-      ua.indexOf('Firefox') != -1 ? 'Firefox' :
-      ua.indexOf('Chrome') != -1 ? 'Chrome' :
-      ua.indexOf('Safari') != -1 ? 'Safari' :
-      'Unknown',
-    uaVer = function() {
-      var matches;
-      return (matches = /MSIE (\d+)/.exec(ua)) ? +matches[1] :
-        (matches = /Trident\/.*rv:(\d+)/.exec(ua)) ? +matches[1] :
-        (matches = /Firefox\/(\d+)/.exec(ua)) ? +matches[1] :
-        (matches = /Chrome\/(\d+)/.exec(ua)) ? +matches[1] :
-        (matches = /Version\/(\d+)[0-9.]+ Safari/.exec(ua)) ? +matches[1] :
-        0;
+  var ua = function() {
+      var ua = navigator.userAgent, name, version;
+      // Check in order of browser share.
+      // See http://gigazine.net/news/20140106-os-browser-share/
+      // Check Chrome before Safari, because Chrome userAgent contains Safari.
+      if (ua.indexOf('MSIE') != -1 || ua.indexOf('Trident') != -1) {
+        name = 'IE';
+        version = /(MSIE |rv:)(\d+)/.exec(ua)[2];
+      } else if (ua.indexOf('Firefox') != -1) {
+        name = 'Firefox';
+        version = /Firefox\/(\d+)/.exec(ua)[1];
+      } else if (ua.indexOf('Chrome') != -1) {
+        name = 'Chrome';
+        version = /Chrome\/(\d+)/.exec(ua)[1];
+      } else if (ua.indexOf('Safari') != -1) {
+        name = 'Safari';
+        version = /Version\/(\d+)/.exec(ua)[1];
+      } else {
+        name = 'Unknown';
+        version = 0;
+      }
+      return { name: name, ver: version };
     }();
 
   $("#userAgent").val(navigator.userAgent);
-  $("#browserType").val(uaType);
-  $("#browserMajorVersion").val(uaVer);
+  $("#browserType").val(ua.name);
+  $("#browserMajorVersion").val(ua.ver);
 });
 </script>
 </body>
