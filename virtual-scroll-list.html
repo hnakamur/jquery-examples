@@ -30,11 +30,12 @@
 <script src="js/jquery-1.11.0.js"></script>
 <script>
 $(function() {
-  var dataCount = 10000;
+  var MAX_CONTENT_HEIGHT = 1000000;
+  var dataCount = 100000;
 
   function measureRowHeight() {
     var row = $('<div class="row"/>').appendTo("#content");
-    adjustRow(row, 0);
+    adjustRow(row, 0, 0);
     var rowHeight = row.outerHeight();
     row.remove();
     return rowHeight;
@@ -44,51 +45,50 @@ $(function() {
     div.text(i + 1);
   }
 
-  function adjustRow(div, i) {
-    div.css('top', i * rowHeight);
+  function adjustRow(div, i, scrollTop, startIndex) {
+    div.css('top', (i - (startIndex || 0)) * rowHeight + (scrollTop || 0));
     div.data("row", i);
     buildRowContent(div, i);
   }
 
   var rowHeight = measureRowHeight();
-  $("#content").css("height", rowHeight * dataCount);
+  console.log("rowHeight", rowHeight);
+  var totalHeight = rowHeight * dataCount;
+  var contentHeight = Math.min(totalHeight, MAX_CONTENT_HEIGHT);
+  var realVirtualHeightRatio = contentHeight / totalHeight;
+  $("#content").css("height", contentHeight);
+  console.log("totalHeight", rowHeight * dataCount, "contentHeight", contentHeight);
 
   var pane = $("#pane");
   var paneHeight = pane.outerHeight();
   var rowCount = Math.ceil(paneHeight / rowHeight) + 1;
-  var rows = {};
+  console.log("rowCount", rowCount);
+  var rows = [];
   var hiddenRows = [];
 
   function initRows() {
     for (var i = 0; i < rowCount; i++) {
       var row = $('<div class="row"/>').appendTo("#content");
-      adjustRow(row, i);
-      rows[i] = row;
-    }
-  }
-
-  function collectHiddenRows(rows, startIndex, endIndex) {
-    for (var i in rows) {
-      if (!(startIndex <= i && i < endIndex)) {
-        hiddenRows.push(rows[i]);
-        delete rows[i];
-      }
+      adjustRow(row, i, 0);
+      rows.push(row);
     }
   }
 
   initRows();
   pane.scroll(function(e) {
     var scrollTop = $(this).scrollTop(),
-      startIndex = Math.floor(scrollTop / rowHeight),
-      endIndex = Math.min(Math.floor((scrollTop + paneHeight) / rowHeight) + 1, dataCount),
+      startPos = scrollTop / contentHeight,
+      startIndex = Math.floor(dataCount * startPos),
+      endIndex = Math.min(startIndex + rowCount, dataCount),
       i, row;
-    collectHiddenRows(rows, startIndex, endIndex);
-    for (i = startIndex; i < endIndex; i++) {
-      if (!rows[i]) {
-        row = hiddenRows.shift();
-        adjustRow(row, i);
-        rows[i] = row;
-      }
+    console.log("startPos", startPos, "startIndex", startIndex, "endIndex", endIndex);
+    console.log("scrollTop", scrollTop, "scrollTop+paneHeight", scrollTop + paneHeight);
+    for (i = startIndex; i <= endIndex; i++) {
+      row = rows[i - startIndex];
+      adjustRow(row, i, scrollTop, startIndex);
+    }
+    for (i = endIndex - startIndex; i < rowCount; i++) {
+      row.css('top', -rowHeight);
     }
   });
 });

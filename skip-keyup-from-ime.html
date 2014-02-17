@@ -8,6 +8,11 @@
 <div>
 <label>Input text with IME on:</label>
 <input type="text" id="text1"></input>
+<p>A log will be appended at 500ms after both of these conditions met.</p>
+<ul>
+<li>key inputs becomes idle.</li>
+<li>IME does not have uncommitted text.</li>
+</ul>
 </div>
 <div>
 <div>
@@ -20,8 +25,12 @@
 <script>
 $(function() {
 
+  var oldText = undefined;
   var hasUncommittedTextInIME = false;
   var updateFiltersTimer = undefined;
+  function onFocusin(e) {
+    oldText = $("#text1").val();
+  }
   function resetUpdateFiltersTimer() {
     if (updateFiltersTimer !== undefined) {
       clearTimeout(updateFiltersTimer);
@@ -29,6 +38,8 @@ $(function() {
     }
   }
   function onKeyup(e) {
+    var text;
+
     resetUpdateFiltersTimer();
 
     // When enter key is pressed, IME commits text.
@@ -41,7 +52,11 @@ $(function() {
     if (!hasUncommittedTextInIME && e.which != 224) {
       var context = this;
       updateFiltersTimer = setTimeout(function() {
-        doSomeWork.apply(context)
+        text = $("#text1").val();
+        if (text != oldText) {
+          oldText = text;
+          doSomeWork.apply(context);
+        }
       }, 500);
     }
   }
@@ -60,9 +75,10 @@ $(function() {
   function log(message) {
     var el = $("#log"), text = el.text() + message + "\r", len = text.length;
     el.text(text).attr('selectionStart', len).attr('selectionEnd', len);
+    el.scrollTop(el[0].scrollHeight - el.height());
   }
 
-  $("#text1").keydown(onKeydown).keyup(onKeyup);
+  $("#text1").focusin(onFocusin).keydown(onKeydown).keyup(onKeyup);
 });
 </script>
 </body>
