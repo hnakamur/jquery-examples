@@ -41,8 +41,7 @@
       }
 
       // Set timer only when IME does not have uncommitted text.
-      // Firefox fires events with e.which = 224 when IME has uncommitted text.
-      if (!hasUncommittedTextInIME && e.which != 224) {
+      if (!hasUncommittedTextInIME) {
         var context = this;
         timer = setTimeout(function() {
           text = el.val();
