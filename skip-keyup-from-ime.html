@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Skip keyup event from IME</title>
+</head>
+<body>
+<div>
+<label>Input text with IME on:</label>
+<input type="text" id="text1"></input>
+</div>
+<div>
+<div>
+<label>log:</label>
+</div>
+<div>
+<textarea rows="10" cols="40" id="log"></textarea>
+</div>
+<script src="js/jquery-1.11.0.js"></script>
+<script>
+$(function() {
+
+  var hasUncommittedTextInIME = false;
+  var updateFiltersTimer = undefined;
+  function resetUpdateFiltersTimer() {
+    if (updateFiltersTimer !== undefined) {
+      clearTimeout(updateFiltersTimer);
+      updateFiltersTimer = undefined;
+    }
+  }
+  function onKeyup(e) {
+    resetUpdateFiltersTimer();
+
+    // When enter key is pressed, IME commits text.
+    if (e.which == 13) {
+      hasUncommittedTextInIME = false;
+    }
+
+    // Set timer only when IME does not have uncommitted text.
+    // Firefox fires events with e.which = 224 when IME has uncommitted text.
+    if (!hasUncommittedTextInIME && e.which != 224) {
+      var context = this;
+      updateFiltersTimer = setTimeout(function() {
+        doSomeWork.apply(context)
+      }, 500);
+    }
+  }
+  function onKeydown(e) {
+    // IE, Chrome and Safari fires events wich e.which = 229 when IME has
+    // uncommitted text.
+    if (e.which == 229) {
+      hasUncommittedTextInIME = true;
+    }
+  }
+
+  function doSomeWork() {
+    log("Do some work with text: " + $("#text1").val());
+  }
+
+  function log(message) {
+    var el = $("#log"), text = el.text() + message + "\r", len = text.length;
+    el.text(text).attr('selectionStart', len).attr('selectionEnd', len);
+  }
+
+  $("#text1").keydown(onKeydown).keyup(onKeyup);
+});
+</script>
+</body>
+</html>
