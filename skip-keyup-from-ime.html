@@ -73,8 +73,8 @@ $(function() {
   }
 
   function log(message) {
-    var el = $("#log"), text = el.text() + message + "\r", len = text.length;
-    el.text(text).attr('selectionStart', len).attr('selectionEnd', len);
+    var el = $("#log");
+    el.text(el.text() + message + "\r");
     el.scrollTop(el[0].scrollHeight - el.height());
   }
 
