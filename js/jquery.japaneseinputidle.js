@@ -2,7 +2,7 @@
   $.fn.japaneseinputidle = function(delay, handler) {
     var el = this,
         oldText = undefined,
-        hasUncommittedTextInIME = false,
+        maybeHaveUncommittedTextInIME = false,
         timer = undefined,
         lastvKeydownWhich;
 
@@ -22,26 +22,13 @@
 
       resetTimer();
 
-      // When Enter or ESC is pressed, IME does not have uncommitted text.
-      // When Backspace is pressed:
-      // - Firefox triggers keyup e.which == 8 only when all uncommitted text
-      //   are deleted. And firefox never triggers an event with
-      //   e.which == 229, so (e.which == 8 && lastKeydownWhich != 229)
-      //   is true at this moment.
-      // - Chrome triggers keydown e.which == 229 and keyup e.which == 8
-      //   everytime backspace is pressed.
-      //   In the code below hasUncommittedTextInIME remains true just
-      //   when all uncommitted text are deleted. However at this moment,
-      //   the text is same as oldText, so it's OK that handler is not called.
-      //   The next keydown event changes lastKeydownWhich to some value
-      //   different from 229 and hasUncommittedTextInIME becomes false.
-      if (e.which == 13 || e.which == 27 ||
-          (e.which == 8 && lastKeydownWhich != 229)) {
-        hasUncommittedTextInIME = false;
+      // When Enter is pressed, IME commits text.
+      if (e.which == 13) {
+        maybeHaveUncommittedTextInIME = false;
       }
 
       // Set timer only when IME does not have uncommitted text.
-      if (!hasUncommittedTextInIME) {
+      if (!maybeHaveUncommittedTextInIME) {
         var context = this;
         timer = setTimeout(function() {
           text = el.val();
@@ -54,14 +41,26 @@
     }
 
     function onKeydown(e) {
-      lastKeydownWhich = e.which;
-
-      // IE, Chrome and Safari fires events wich e.which = 229 when IME has
-      // uncommitted text.
-      if (lastKeydownWhich == 229) {
-        hasUncommittedTextInIME = true;
-      }
-
+      // Firefox fires keydown for the first key, does not fire
+      // keydown nor keyup event during IME has uncommitted text, 
+      // fires keyup when IME commits or deletes all uncommitted text.
+      //
+      // IE, Chrome and Safari fires events with e.which = 229 for
+      // every keydown during IME has uncommitted text.
+      //
+      // Note:
+      // For IE, Chrome and Safari, I cannot detect the moment when
+      // you delete all uncommitted text with pressing ESC or Backspace
+      // appropriate times, so maybeHaveUncommittedTextInIME remains true
+      // at the moment.
+      //
+      // However, it is not a problem. Because the text becomes same
+      // to oldText at the moment, we does not invoke handler anyway.
+      //
+      // Next time key is pressed and if it causes text to change,
+      // keydown with e.which != 229 occurs, maybeHaveUncommittedTextInIME
+      // becomes false and handler will be invoked.
+      maybeHaveUncommittedTextInIME = (e.which == 229);
     }
 
     el.focusin(onFocusin).keydown(onKeydown).keyup(onKeyup);
