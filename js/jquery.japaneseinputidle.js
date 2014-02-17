@@ -3,13 +3,13 @@
     var el = this,
         readyToSetTimer = true,
         isFirefox = navigator.userAgent.indexOf('Firefox') != -1,
-        oldText,
+        oldVal,
         timer;
 
     el.focusin(function() {
-      oldText = el.val();
+      oldVal = el.val();
     }).keyup(function(e) {
-      var context = this, text;
+      var context = this, val;
 
       if (timer !== undefined) {
         clearTimeout(timer);
@@ -30,10 +30,10 @@
           // 3. The user presses keys and IME has some uncommitted text.
           //    before timer fires.
           if (readyToSetTimer) {
-            text = el.val();
-            if (text != oldText) {
+            val = el.val();
+            if (val != oldVal) {
               handler.call(context, e);
-              oldText = text;
+              oldVal = val;
             }
           }
         }, delay);
@@ -53,7 +53,7 @@
         // appropriate times, so readyToSetTimer remains false at the moment.
         //
         // However, it is not a problem. Because the text becomes same
-        // to oldText at the moment, we does not invoke handler anyway.
+        // as oldVal at the moment, we does not invoke handler anyway.
         //
         // Next time key is pressed and if it causes text to change,
         // keydown with e.which != 229 occurs, readyToSetTimer becomes
