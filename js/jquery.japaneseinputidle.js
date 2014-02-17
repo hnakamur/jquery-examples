@@ -14,7 +14,7 @@
       }
     }
 
-    el.focusin(function() {
+    el.focus(function() {
       oldVal = el.val();
     }).blur(function(e) {
       callHandler(this, e);
