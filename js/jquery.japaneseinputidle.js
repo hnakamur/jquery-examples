@@ -6,8 +6,18 @@
         oldVal,
         timer;
 
+    function callHandler(context, e) {
+      val = el.val();
+      if (val != oldVal) {
+        handler.call(context, e);
+        oldVal = val;
+      }
+    }
+
     el.focusin(function() {
       oldVal = el.val();
+    }).blur(function(e) {
+      callHandler(this, e);
     }).keyup(function(e) {
       var context = this, val;
 
@@ -30,11 +40,7 @@
           // 3. The user presses keys and IME has some uncommitted text.
           //    before timer fires.
           if (readyToSetTimer) {
-            val = el.val();
-            if (val != oldVal) {
-              handler.call(context, e);
-              oldVal = val;
-            }
+            callHandler(context, e);
           }
         }, delay);
       }
