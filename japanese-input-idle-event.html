@@ -27,20 +27,20 @@ $(function() {
 
   var oldText = undefined;
   var hasUncommittedTextInIME = false;
-  var updateFiltersTimer = undefined;
+  var timer = undefined;
   function onFocusin(e) {
     oldText = $("#text1").val();
   }
-  function resetUpdateFiltersTimer() {
-    if (updateFiltersTimer !== undefined) {
-      clearTimeout(updateFiltersTimer);
-      updateFiltersTimer = undefined;
+  function resetTimer() {
+    if (timer !== undefined) {
+      clearTimeout(timer);
+      timer = undefined;
     }
   }
   function onKeyup(e) {
     var text;
 
-    resetUpdateFiltersTimer();
+    resetTimer();
 
     // When enter key is pressed, IME commits text.
     if (e.which == 13) {
@@ -51,7 +51,7 @@ $(function() {
     // Firefox fires events with e.which = 224 when IME has uncommitted text.
     if (!hasUncommittedTextInIME && e.which != 224) {
       var context = this;
-      updateFiltersTimer = setTimeout(function() {
+      timer = setTimeout(function() {
         text = $("#text1").val();
         if (text != oldText) {
           oldText = text;
