@@ -1,6 +1,7 @@
 /*! Japanese input idle plugin for jQuery.
-   (c) 2014 Hiroaki Nakamura
-   MIT License
+    https://raw.github.com/hnakamur/jquery-examples/master/js/jquery.japaneseinputidle.js
+    (c) 2014 Hiroaki Nakamura
+    MIT License
  */
 (function($, undefined) {
   $.fn.japaneseinputidle = function(delay, handler) {
