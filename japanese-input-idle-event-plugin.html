@@ -36,8 +36,7 @@ $(function() {
     el.scrollTop(el[0].scrollHeight - el.height());
   }
 
-  $("#text1").japaneseinputidle(500, doSomeWork);
-  $("#text2").japaneseinputidle(500, doSomeWork);
+  $("input[type=text],textarea").japaneseinputidle(500, doSomeWork);
 });
 </script>
 </body>
