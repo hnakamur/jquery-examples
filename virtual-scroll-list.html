@@ -4,7 +4,7 @@
 <meta charset="utf-8"/>
 <title>web ui examples</title>
 <style>
-#pane {
+#viewport {
   width: 200px;
   height: 300px;
   overflow: auto;
@@ -23,14 +23,40 @@
 </style>
 </head>
 <body>
-<div id="pane">
+<div id="viewport">
 <div id="content">
 </div>
 </div>
 <script src="js/jquery-1.11.0.js"></script>
 <script>
 $(function() {
-  var dataCount = 1e6; // a million
+  var $content = $('#content'), viewport = $("#viewport");
+
+  function supportsHeight(height) {
+    $content.css('height', height);
+    return $content.outerHeight() === height;
+  }
+
+  function searchHeightLimit() {
+    var okHeight = 1e6, ngHeight, height = okHeight;
+    while (supportsHeight(height)) {
+      okHeight = height;
+      height *= 2;
+    }
+    ngHeight = height;
+    while (true) {
+      height = Math.floor((okHeight + ngHeight) / 2);
+      if (height === okHeight) {
+        break;
+      }
+      if (supportsHeight(height)) {
+        okHeight = height;
+      } else {
+        ngHeight = height;
+      }
+    }
+    return height;
+  }
 
   function measureRowHeight() {
     var row = $('<div class="row"/>').appendTo("#content");
@@ -50,37 +76,35 @@ $(function() {
     buildRowContent(div, i);
   }
 
+  var heightLimit = searchHeightLimit();
   var rowHeight = measureRowHeight();
-  var totalHeight = rowHeight * dataCount;
-  var contentHeight = totalHeight;
-  var realVirtualHeightRatio = contentHeight / totalHeight;
+  var dataCount = Math.floor(heightLimit / rowHeight);
+  var contentHeight = rowHeight * dataCount;
   $("#content").css("height", contentHeight);
-  console.log("totalHeight", totalHeight, "contentHeight", contentHeight, "actualContentHeight", $("#content").css("height"));
+  console.log("dataCount=", dataCount, ",rowHeight=", rowHeight, ",contentHeight=", contentHeight);
 
-  var pane = $("#pane");
-  var paneHeight = pane.outerHeight();
-  var rowCount = Math.ceil(paneHeight / rowHeight) + 2;
-  console.log("viewportH", paneHeight, "rowHeight", rowHeight, "rowCount", rowCount);
-  console.log("viewportScrollTopMax", contentHeight - paneHeight);
+  var viewportHeight = viewport.outerHeight();
+  var rowCount = Math.ceil(viewportHeight / rowHeight) + 2;
+  console.log("viewportHeight=", viewportHeight, ",rowHeight=", rowHeight, ",rowCount=", rowCount);
+  console.log("viewportScrollTopMax=", contentHeight - viewportHeight);
   var rows = [];
-  var hiddenRows = [];
 
   function initRows() {
     for (var i = 0; i < rowCount; i++) {
       var row = $('<div class="row"/>').appendTo("#content");
-      adjustRow(row, i, 0);
+      adjustRow(row, i);
       rows.push(row);
     }
   }
 
   initRows();
-  pane.scroll(function(e) {
-    var scrollTop = Math.min($(this).scrollTop(), contentHeight - paneHeight),
+  viewport.scroll(function(e) {
+    var scrollTop = Math.min($(this).scrollTop(), contentHeight - viewportHeight),
         startIndex = Math.floor(scrollTop / rowHeight),
-        endIndex = Math.ceil((scrollTop + paneHeight) / rowHeight),
+        endIndex = Math.ceil((scrollTop + viewportHeight) / rowHeight),
         i, row;
-    console.log("startIndex", startIndex, "endIndex", endIndex, "count", endIndex - startIndex + 1);
-    console.log("scrollTop", scrollTop, "contentHeight-paneHeight", contentHeight - paneHeight);
+    console.log("startIndex=", startIndex, ",endIndex=", endIndex, ",count=", endIndex - startIndex + 1);
+    console.log("scrollTop=", scrollTop, ",viewportScrollTopMax=", contentHeight - viewportHeight);
     for (i = startIndex; i < endIndex; i++) {
       row = rows[i - startIndex];
       adjustRow(row, i);
