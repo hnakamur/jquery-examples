@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<title>Find out the limits of heights and scrolltop</title>
+<style>
+#viewport {
+  width: 200px;
+  height: 300px;
+  overflow: auto;
+  background-color: #eee;
+  position: relative; /* needed for IE7 */
+}
+#content {
+  background-color: #ccc;
+  position: relative;
+}
+table {
+  border-collapse: collapse;
+}
+td {
+  text-align: right;
+}
+</style>
+</head>
+<body>
+<p>See javascript console for log.</p>
+<div id="viewport">
+<div id="content">
+</div>
+</div>
+Results:
+<table border="1">
+<tr><th>browser</th><th>height limit</th><th>scrollTopLimit</th><th>viewport height</th></tr>
+<tr><td>Chrome33</td><td>33544828</td><td>33544528</td><td>300</td></tr>
+<tr><td>Safari6.1.2</td><td>33544828</td><td>33544528</td><td>300</td></tr>
+<tr><td>Firefox28</td><td>17888578</td><td>17888278</td><td>300</td></tr>
+<tr><td>IE11</td><td>1533917</td><td>1533617</td><td>300</td></tr>
+<tr><td>IE10</td><td>1533917</td><td>1533617</td><td>300</td></tr>
+<tr><td>IE9</td><td>1533917</td><td>1533617</td><td>300</td></tr>
+<tr><td>IE8</td><td>1533917</td><td>1533617</td><td>300</td></tr>
+</table>
+<script src="js/jquery-1.11.0.js"></script>
+<script>
+$(function() {
+  var $content = $('#content'), $viewport = $('#viewport'),
+      heightLimit, scrollTopLimit;
+
+  function supportsHeight(height) {
+    $content.css('height', height);
+    return $content.outerHeight() === height;
+  }
+
+  function searchHeightLimit() {
+    var okValue = 1e6, ngValue, value = okValue;
+    while (supportsHeight(value)) {
+      okValue = value;
+      value *= 2;
+    }
+    ngValue = value;
+    while (true) {
+      value = Math.floor((okValue + ngValue) / 2);
+      if (value === okValue) {
+        break;
+      }
+      if (supportsHeight(value)) {
+        okValue = value;
+      } else {
+        ngValue = value;
+      }
+    }
+    return value;
+  }
+
+  function supportsScrollTop(value) {
+    $viewport.scrollTop(value);
+    return $viewport.scrollTop() === value;
+  }
+
+  function searchScrollTopLimit(heightLimit, viewportHeight) {
+    var value = heightLimit - viewportHeight;
+    if (supportsScrollTop(value)) {
+      return value;
+    }
+
+    while (!supportsScrollTop(value)) {
+      value--;
+    }
+    return value;
+  }
+
+  heightLimit = searchHeightLimit();
+  $content.css('height', heightLimit);
+
+  scrollTopLimit = searchScrollTopLimit(heightLimit, $viewport.outerHeight());
+  console.log('userAgent=', navigator.userAgent);
+  console.log('heightLimit=', heightLimit);
+  console.log('scrollTopLimit=', scrollTopLimit);
+  console.log('viewportHeight=', $viewport.outerHeight());
+
+  $viewport.scroll(function(e) {
+    console.log('scrollTop=', $viewport.scrollTop());
+  });
+});
+</script>
+</body>
+</html>
